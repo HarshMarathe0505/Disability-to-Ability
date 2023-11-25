@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech-to-Sign-Language App</title>
+    <style>
+        body {
+            background-color: #494949;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            color: white;
+        }
+
+        #appContainer {
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2em;
+        }
+
+        button {
+            font-size: 1.5em;
+            padding: 10px 20px;
+            margin-top: 20px;
+            cursor: pointer;
+            background-color: #fff;
+            color: #333;
+            border: none;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        #outputContainer {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        #output {
+            font-size: 1.5em;
+            background-color: black;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            margin-top: 10px;
+            display: inline-block;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        #videoContainer {
+            width: 100%;
+            max-width: 600px;
+            margin-top: 20px;
+            height: 360px; /* Set the fixed height for the video container */
+            border: 5px solid black;
+            border-radius: 10px;
+            overflow: hidden;
+            outline: 5px solid white;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="appContainer">
+        <h1>Speech-to-Sign-Language App</h1>
+        <p>Click the button and start speaking.</p>
+        <button id="startButton">Start Recording</button>
+        <button id="playAgainButton" style="display:none;">Play Again</button>
+        <div id="outputContainer">
+            <div id="output"></div>
+        </div>
+        <div id="videoContainer">
+            <video id="signVideo" autoplay preload="auto">
+                <source src="" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+    </div>
+
+    <script>
+        const startButton = document.getElementById('startButton');
+        const playAgainButton = document.getElementById('playAgainButton');
+        const outputDiv = document.getElementById('output');
+        const signVideo = document.getElementById('signVideo');
+        const recognition = new webkitSpeechRecognition() || new SpeechRecognition();
+        let isRecognitionActive = false;
+
+        recognition.lang = 'en-US';
+        recognition.interimResults = true;
+
+        startButton.addEventListener('click', () => {
+            if (!isRecognitionActive) {
+                recognition.start();
+                isRecognitionActive = true;
+                startButton.textContent = 'Recording...';
+            }
+        });
+
+        playAgainButton.addEventListener('click', () => {
+            playSignVideos(outputDiv.textContent.toLowerCase());
+        });
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            outputDiv.innerHTML = `<p>${transcript}</p>`;
+            playAgainButton.style.display = 'inline-block';
+            playSignVideos(transcript.toLowerCase());
+        };
+
+        recognition.onend = () => {
+            isRecognitionActive = false;
+            startButton.textContent = 'Start Recording';
+        };
+
+        recognition.onerror = (event) => {
+            console.error('Speech recognition error:', event.error);
+            isRecognitionActive = false;
+        };
+
+        function playSignVideos(phrase) {
+            // Split the spoken phrase into individual words
+            const words = phrase.split(' ');
+
+            // Mapping for spoken words representing numbers
+            const numberMapping = {
+                one: '1',
+                two: '2',
+                three: '3',
+                four: '4',
+                five: '5',
+                six: '6',
+                sevent: '7',
+                eight: '8',
+                nine:'9',
+            };
+
+            // Play videos for each word or number
+            words.forEach((word, index) => {
+                setTimeout(() => {
+                    if (word.toLowerCase() in numberMapping) {
+                        playSignVideo(numberMapping[word.toLowerCase()]);
+                    } else {
+                        playSignVideo(word.toLowerCase());
+                    }
+                }, index * 2000); // Adjust the delay as needed
+            });
+        }
+
+        function playSignVideo(word) {
+            // Manually specify the video names and play the corresponding video
+            switch (word) {
+                case 'hello':
+                    setSignVideo('./assets/hello.mp4');
+                    break;
+                case 'world':
+                    setSignVideo('./assets/world.mp4');
+                    break;
+                default:
+                    checkVideoExistence(word)
+                        .then(exists => {
+                            if (exists) {
+                                setSignVideo(`./assets/${word}.mp4`);
+                            } else {
+                                spellOutLetters(word);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error checking video existence:', error);
+                        });
+                    break;
+            }
+        }
+
+        function setSignVideo(src) {
+            // Set the source of the video based on the spoken word or number
+            signVideo.src = src;
+            signVideo.load();
+            signVideo.play().catch(error => {
+                console.error('Error playing video:', error);
+            });
+        }
+
+        function checkVideoExistence(word) {
+            return new Promise((resolve) => {
+                const video = new Image();
+                video.src = `./assets/${word}.mp4`;
+                video.onload = () => resolve(true);
+                video.onerror = () => resolve(false);
+            });
+        }
+
+        function spellOutLetters(word) {
+            for (let i = 0; i < word.length; i++) {
+                const letter = word[i];
+                setTimeout(() => {
+                    setSignVideo(`./assets/${letter}.mp4`);
+                }, i * 2000);
+            }
+        }
+    </script>
+</body>
+</html>
