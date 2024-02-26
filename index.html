@@ -6,18 +6,20 @@
     <title>Speech-to-Sign-Language App</title>
     <style>
         body {
-            background-color: #872341;
+            background-color: white;
             display: flex;
             align-items: center;
             justify-content: center;
             height: 100vh;
             margin: 0;
             font-family: 'Arial', sans-serif;
-            color: white;
+            color: black;
         }
 
         #appContainer {
+
             text-align: center;
+ 
         }
 
         h1 {
@@ -29,8 +31,8 @@
             padding: 10px 20px;
             margin-top: 20px;
             cursor: pointer;
-            background-color: #F05941;
-            color: #333;
+            background-color: #007bff;
+            color: white;
             border: none;
             border-radius: 5px;
             margin-right: 10px;
@@ -44,7 +46,7 @@
         #output {
             font-size: 1.5em;
             background-color: black;
-            color: white;
+            color: black;
             padding: 10px;
             border-radius: 5px;
             white-space: pre-wrap;
@@ -61,7 +63,7 @@
             border: 10px solid black;
             border-radius: 10px;
             overflow: hidden;
-            outline: 10px solid #8d1010;
+            outline: 10px solid #007bff;
         }
 
         video {
@@ -80,7 +82,7 @@
         <button id="playAgainButton" style="display:none;">Play Again</button>
         <div id="outputContainer">
             <div id="output"></div>
-        </div>
+        </div> 
         <div id="videoContainer">
             <video id="signVideo" autoplay preload="auto">
                 <source src="" type="video/mp4">
@@ -88,7 +90,6 @@
             </video>
         </div>
     </div>
-
 
     
 
@@ -196,7 +197,6 @@ const hindiMapping = {
 };
 
 
-            // Play videos for each word or number
             words.forEach((word, index) => {
                 setTimeout(() => {
                     if (word.toLowerCase() in numberMapping) {
@@ -204,12 +204,11 @@ const hindiMapping = {
                     } else {
                         playSignVideo(word.toLowerCase());
                     }
-                }, index * 1000); // Adjust the delay as needed
+                }, index * 1000); 
             });
         }
 
         function playSignVideo(word) {
-            // Manually specify the video names and play the corresponding video
             switch (word) {
                 case 'hello':
                     setSignVideo('./assets/hello.mp4');
